@@ -1,0 +1,49 @@
+name: funny_flower
+description: A new Flutter project for a magical flower shop.
+publish_to: 'none' # This line prevents accidental publishing to pub.dev.
+
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0' # Убедитесь, что ваш Flutter SDK соответствует этому диапазону
+
+# --- НАШИ ЗАВИСИМОСТИ ---
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # Firebase
+  firebase_core: ^2.15.1
+  firebase_auth: ^4.7.3
+  cloud_firestore: ^4.8.5
+
+  # Routing
+  go_router: ^10.0.0
+
+  # State Management
+  provider: ^6.0.5
+
+  # UI & Animations
+  lottie: ^2.6.0
+  introduction_screen: ^3.1.12
+  google_fonts: ^5.1.0
+
+  # Стандартная зависимость для iOS иконок
+  cupertino_icons: ^1.0.2
+
+  intl: ^0.19.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  flutter_lints: ^2.0.0
+
+# --- НАСТРОЙКИ FLUTTER ---
+flutter:
+  uses-material-design: true
+
+  # Пути к нашим ресурсам (анимации, картинки)
+  assets:
+    - assets/animations/
+    - assets/images/
