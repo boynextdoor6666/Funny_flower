@@ -4,9 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:funny_flower/app_router.dart';
 import 'package:funny_flower/providers/cart_provider.dart';
+import 'package:funny_flower/providers/wishlist_provider.dart'; // <-- 1. ДОБАВЬТЕ ЭТОТ ИМПОРТ
 import 'package:funny_flower/services/auth_service.dart';
 import 'package:funny_flower/services/firestore_service.dart';
-import 'package:funny_flower/services/storage_service.dart'; // <-- 1. ДОБАВЬТЕ ЭТОТ ИМПОРТ
+import 'package:funny_flower/services/storage_service.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'firebase_options.dart';
@@ -26,15 +27,18 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        // --- СЕРВИСЫ (ОБЫЧНЫЕ PROVIDER) ---
+        // --- СЕРВИСЫ (ПРЕДОСТАВЛЯЮТ ЛОГИКУ) ---
         Provider<AuthService>(create: (_) => AuthService()),
         Provider<FirestoreService>(create: (_) => FirestoreService()),
-        Provider<StorageService>(create: (_) => StorageService()), // <-- 2. ДОБАВЬТЕ ЭТУ СТРОКУ
+        Provider<StorageService>(create: (_) => StorageService()),
 
-        // --- ПРОВАЙДЕРЫ СОСТОЯНИЯ (CHANGENOTIFIERPROVIDER) ---
+        // --- ПРОВАЙДЕРЫ СОСТОЯНИЯ (УПРАВЛЯЮТ UI) ---
         ChangeNotifierProvider<CartProvider>(
           create: (_) => CartProvider(),
         ),
+        ChangeNotifierProvider<WishlistProvider>(
+          create: (_) => WishlistProvider(),
+        ), // <-- 2. ДОБАВЬТЕ ЭТУ СТРОКУ
       ],
       child: MaterialApp.router(
         title: 'Funny Flower',

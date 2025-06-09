@@ -6,21 +6,46 @@ import 'package:funny_flower/models/user_order_model.dart';
 class FirestoreService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
 
-  Stream<List<Product>> getProducts() {
-    return _db.collection('products').snapshots().map((snapshot) =>
+  // --- ✅ ОБНОВЛЕННЫЕ МЕТОДЫ ДЛЯ ТОВАРОВ ---
+
+  /// Получает товары для карусели "Выбор Шамана".
+  /// Фильтрует по новому полю isShamanChoice.
+  Stream<List<Product>> getShamanChoiceProducts() {
+    return _db
+        .collection('products')
+        .where('isShamanChoice', isEqualTo: true)
+        .snapshots()
+        .map((snapshot) =>
         snapshot.docs.map((doc) => Product.fromFirestore(doc)).toList());
   }
 
+  /// Получает список продуктов с возможностью фильтрации по эффекту.
+  /// Также сортирует их по интенсивности, чтобы самые "сильные" были вверху.
+  Stream<List<Product>> getProducts({String? effect}) {
+    // Начинаем с базового запроса, который сортирует по интенсивности
+    Query query = _db.collection('products').orderBy('intensity', descending: true);
+
+    // Если передан эффект (и это не "Все"), добавляем фильтр
+    if (effect != null && effect != 'Все') {
+      query = query.where('effect', isEqualTo: effect);
+    }
+
+    return query.snapshots().map((snapshot) =>
+        snapshot.docs.map((doc) => Product.fromFirestore(doc)).toList());
+  }
+
+  /// Метод для получения одного продукта по ID остается без изменений.
   Future<Product> getProductById(String id) async {
     final doc = await _db.collection('products').doc(id).get();
     return Product.fromFirestore(doc);
   }
 
+  // --- МЕТОДЫ ДЛЯ ЗАКАЗОВ И ПРОФИЛЯ ОСТАЮТСЯ БЕЗ ИЗМЕНЕНИЙ ---
+
   Future<void> addOrder(UserOrder order) {
     return _db.collection('orders').add(order.toJson());
   }
 
-  // ✅ ВОТ МЕТОД, КОТОРЫЙ НЕ БЫЛ НАЙДЕН
   Stream<List<UserOrder>> getUserOrders(String userId) {
     return _db
         .collection('orders')
