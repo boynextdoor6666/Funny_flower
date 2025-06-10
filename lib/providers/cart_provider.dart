@@ -6,20 +6,31 @@ import 'package:funny_flower/models/product_model.dart';
 class CartProvider with ChangeNotifier {
   Map<String, CartItem> _items = {};
 
+  // ✅ 1. Храним общую сумму в отдельной переменной для эффективности
+  double _totalAmount = 0.0;
+
   Map<String, CartItem> get items {
     return {..._items};
   }
 
   int get itemCount {
+    // Возвращаем количество уникальных товаров, а не общее количество
     return _items.length;
   }
 
+  // ✅ 2. Геттер теперь просто возвращает сохраненное значение, без вычислений
   double get totalAmount {
+    return _totalAmount;
+  }
+
+  /// ✅ 3. Приватный хелпер для пересчета общей суммы.
+  /// Вызывается только когда корзина изменяется.
+  void _recalculateTotal() {
     var total = 0.0;
     _items.forEach((key, cartItem) {
       total += cartItem.price * cartItem.quantity;
     });
-    return total;
+    _totalAmount = total;
   }
 
   void addToCart(Product product) {
@@ -28,6 +39,7 @@ class CartProvider with ChangeNotifier {
       _items.update(
         product.id,
             (existingCartItem) => CartItem(
+          // id и другие поля берем из существующего элемента
           id: existingCartItem.id,
           productId: existingCartItem.productId,
           name: existingCartItem.name,
@@ -41,6 +53,7 @@ class CartProvider with ChangeNotifier {
       _items.putIfAbsent(
         product.id,
             () => CartItem(
+          // ID для нового элемента (можно использовать productId, если он уникален)
           id: DateTime.now().toString(),
           productId: product.id,
           name: product.name,
@@ -50,12 +63,27 @@ class CartProvider with ChangeNotifier {
         ),
       );
     }
-    notifyListeners();
+    _recalculateTotal(); // Пересчитываем сумму
+    notifyListeners();   // Уведомляем слушателей
   }
 
-  void removeItem(String productId) {
-    _items.remove(productId);
-    notifyListeners();
+  /// ✅ 4. НОВЫЙ МЕТОД для добавления одной единицы товара.
+  void addSingleItem(String productId) {
+    if (_items.containsKey(productId)) {
+      _items.update(
+        productId,
+            (existingItem) => CartItem(
+          id: existingItem.id,
+          productId: existingItem.productId,
+          name: existingItem.name,
+          price: existingItem.price,
+          imageUrl: existingItem.imageUrl,
+          quantity: existingItem.quantity + 1, // Просто увеличиваем количество
+        ),
+      );
+      _recalculateTotal();
+      notifyListeners();
+    }
   }
 
   void removeSingleItem(String productId) {
@@ -63,6 +91,7 @@ class CartProvider with ChangeNotifier {
       return;
     }
     if (_items[productId]!.quantity > 1) {
+      // Уменьшить количество
       _items.update(
         productId,
             (existing) => CartItem(
@@ -75,13 +104,22 @@ class CartProvider with ChangeNotifier {
         ),
       );
     } else {
+      // Удалить товар, если он один
       _items.remove(productId);
     }
+    _recalculateTotal();
+    notifyListeners();
+  }
+
+  void removeItem(String productId) {
+    _items.remove(productId);
+    _recalculateTotal();
     notifyListeners();
   }
 
   void clearCart() {
     _items = {};
+    _totalAmount = 0.0; // Также сбрасываем сумму
     notifyListeners();
   }
 }

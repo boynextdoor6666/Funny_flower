@@ -5,12 +5,18 @@ class Product {
   final String id;
   final String name;
   final String latinName;
-  final String description; // Описание эффектов, происхождения
+  final String description;
   final double price;
   final String imageUrl;
-  final String effect;     // <-- НОВОЕ ПОЛЕ: Основной эффект
-  final int intensity;     // <-- НОВОЕ ПОЛЕ: Интенсивность (1-5)
-  final bool isShamanChoice; // <-- НОВОЕ ПОЛЕ: Для карусели
+  final String effect;
+  final int intensity;
+  final bool isShamanChoice;
+
+  
+  final double? dosageLight;      // Доза для легкого эффекта ("Знакомство")
+  final double? dosageMedium;     // Доза для стандартного эффекта ("Стандарт")
+  final double? dosageHeavy;      // Доза для глубокого эффекта ("Глубина")
+  final String? dosageUnit;       // Единица измерения (например, "г", "шт", "мл")
 
   Product({
     required this.id,
@@ -22,10 +28,15 @@ class Product {
     required this.effect,
     required this.intensity,
     required this.isShamanChoice,
+    // ✅ 2. ДОБАВЛЕНЫ В КОНСТРУКТОР
+    this.dosageLight,
+    this.dosageMedium,
+    this.dosageHeavy,
+    this.dosageUnit,
   });
 
   factory Product.fromFirestore(DocumentSnapshot doc) {
-    Map data = doc.data() as Map<String, dynamic>;
+    Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
     return Product(
       id: doc.id,
       name: data['name'] ?? '',
@@ -36,6 +47,12 @@ class Product {
       effect: data['effect'] ?? 'Неизвестный',
       intensity: (data['intensity'] as int?) ?? 1,
       isShamanChoice: data['isShamanChoice'] ?? false,
+
+
+      dosageLight: (data['dosageLight'] as num?)?.toDouble(),
+      dosageMedium: (data['dosageMedium'] as num?)?.toDouble(),
+      dosageHeavy: (data['dosageHeavy'] as num?)?.toDouble(),
+      dosageUnit: data['dosageUnit'],
     );
   }
 }
