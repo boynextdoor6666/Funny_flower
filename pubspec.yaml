@@ -23,6 +23,8 @@ dependencies:
   # State Management
   provider: ^6.0.5
 
+  audioplayers: ^5.2.1
+
   # UI & Animations
   lottie: ^2.6.0
   introduction_screen: ^3.1.12
@@ -49,3 +51,4 @@ flutter:
   assets:
     - assets/animations/
     - assets/images/
+    - assets/audio/
