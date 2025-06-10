@@ -20,8 +20,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   late TextEditingController _nameController;
   File? _imageFile;
   bool _isLoading = false;
-
-  // --- ✅ 1. НОВАЯ ПЕРЕМЕННАЯ ДЛЯ СТАТУСА ---
   String _loadingStatus = '';
 
   @override
@@ -47,6 +45,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   }
 
   Future<void> _deleteImage(FirestoreService firestoreService, StorageService storageService) async {
+    // Копируем user в локальную переменную, чтобы избежать изменения widget.user напрямую
+    UserModel localUser = widget.user;
+
     setState(() {
       _isLoading = true;
       _loadingStatus = 'Удаление фото...';
@@ -55,7 +56,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       await storageService.deleteProfilePicture(widget.user.uid);
       await firestoreService.updateUserProfile(widget.user.uid, {'photoUrl': null});
       setState(() {
-        widget.user.photoUrl = null;
+        // Обновляем локальную модель
+        localUser.photoUrl = null;
         _imageFile = null;
       });
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Фото удалено')));
@@ -71,13 +73,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     }
   }
 
-  // --- ✅ 2. ОБНОВЛЕННЫЙ МЕТОД СОХРАНЕНИЯ С УСТАНОВКОЙ СТАТУСОВ ---
   Future<void> _saveProfile() async {
     if (!_formKey.currentState!.validate()) return;
 
     setState(() {
       _isLoading = true;
-      _loadingStatus = 'Подготовка...'; // Начальный статус
+      _loadingStatus = 'Подготовка...';
     });
 
     final firestoreService = context.read<FirestoreService>();
@@ -87,16 +88,17 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     try {
       String? newPhotoUrl = widget.user.photoUrl;
 
-      // Если выбрано новое изображение, загружаем его
       if (_imageFile != null) {
         setState(() {
-          _loadingStatus = 'Загрузка фото...'; // Статус перед самой долгой операцией
+          // Статус теперь будет "Загрузка фото...", но сам процесс будет очень быстрым
+          _loadingStatus = 'Сжатие и загрузка фото...';
         });
+        // Вызываем обновленный метод, который сам сожмет изображение
         newPhotoUrl = await storageService.uploadProfilePicture(widget.user.uid, _imageFile!);
       }
 
       setState(() {
-        _loadingStatus = 'Сохранение профиля...'; // Статус перед финальной операцией
+        _loadingStatus = 'Сохранение профиля...';
       });
       final Map<String, dynamic> updatedData = {
         'displayName': _nameController.text,
@@ -127,7 +129,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
     return Scaffold(
       appBar: AppBar(title: const Text('Редактировать профиль')),
-      // --- ✅ 3. ОБНОВЛЕННЫЙ BODY С ОТОБРАЖЕНИЕМ СТАТУСА ---
       body: _isLoading
           ? Center(
           child: Column(
@@ -206,7 +207,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               const SizedBox(height: 40),
 
               ElevatedButton(
-                onPressed: _saveProfile,
+                onPressed: _isLoading ? null : _saveProfile,
                 style: ElevatedButton.styleFrom(minimumSize: const Size(double.infinity, 50)),
                 child: const Text('Сохранить'),
               ),

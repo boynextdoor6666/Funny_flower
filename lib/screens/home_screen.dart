@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:funny_flower/models/product_model.dart';
 import 'package:funny_flower/providers/wishlist_provider.dart';
 import 'package:funny_flower/services/firestore_service.dart';
-import 'package:funny_flower/utils/intentions.dart'; // ✅ 1. Импортируем наш генератор
+import 'package:funny_flower/utils/intentions.dart';
 import 'package:funny_flower/widgets/multi_wave_background.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';

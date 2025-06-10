@@ -16,6 +16,8 @@ dependencies:
   firebase_core: ^2.15.1
   firebase_auth: ^4.7.3
   cloud_firestore: ^4.8.5
+  flutter_image_compress: ^2.1.0
+  path_provider: ^2.1.1
 
   # Routing
   go_router: ^10.0.0

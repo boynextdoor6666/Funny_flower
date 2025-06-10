@@ -4,29 +4,110 @@ import 'package:flutter/material.dart';
 import 'package:funny_flower/models/user_order_model.dart';
 import 'package:funny_flower/providers/cart_provider.dart';
 import 'package:funny_flower/services/firestore_service.dart';
-import 'package:funny_flower/widgets/multi_wave_background.dart'; // ✅ 1. Импорт фона
+import 'package:funny_flower/widgets/fake_payment_processor.dart';
+import 'package:funny_flower/widgets/multi_wave_background.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 class CartScreen extends StatelessWidget {
   const CartScreen({Key? key}) : super(key: key);
 
-  // ... (метод _checkout остается без изменений) ...
-  void _checkout(BuildContext context, CartProvider cart, FirestoreService firestoreService) async {
-    // ...
+  /// Показывает BottomSheet с вариантами оплаты
+  void _showPaymentOptions(BuildContext context, CartProvider cart) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFF1e1e1e),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              'Выберите способ оплаты',
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.headlineSmall,
+            ),
+            const SizedBox(height: 20),
+            _buildPaymentMethodTile(context, cart, 'Банковская карта', Icons.credit_card),
+            const Divider(color: Colors.white24),
+            _buildPaymentMethodTile(context, cart, 'Система Быстрых Платежей (СБП)', Icons.qr_code_2),
+            const SizedBox(height: 10),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Вспомогательный виджет для пункта меню в BottomSheet
+  Widget _buildPaymentMethodTile(BuildContext context, CartProvider cart, String method, IconData icon) {
+    return ListTile(
+      leading: Icon(icon, color: Colors.cyanAccent),
+      title: Text(method),
+      onTap: () {
+        Navigator.of(context).pop();
+        _processCheckout(context, cart, method);
+      },
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+    );
+  }
+
+  /// Основная логика, которая вызывает имитатор
+  void _processCheckout(BuildContext context, CartProvider cart, String paymentMethod) async {
+    final firestoreService = Provider.of<FirestoreService>(context, listen: false);
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    final bool? paymentSuccess = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => const FakePaymentProcessor(),
+    );
+
+    if (paymentSuccess == null || !paymentSuccess) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Не удалось завершить оплату.'), backgroundColor: Colors.red),
+      );
+      return;
+    }
+
+    try {
+      final newOrder = UserOrder(
+        id: '',
+        userId: user.uid,
+        items: cart.items.values.toList(),
+        totalAmount: cart.totalAmount,
+        orderDate: DateTime.now(),
+        paymentMethod: paymentMethod,
+        paymentStatus: 'paid',
+      );
+
+      await firestoreService.addOrder(newOrder);
+      cart.clearCart();
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Заказ успешно оплачен!'), backgroundColor: Colors.green),
+      );
+      context.go('/home');
+
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Ошибка при создании заказа: $e')),
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final cart = Provider.of<CartProvider>(context);
-    final firestoreService = Provider.of<FirestoreService>(context, listen: false);
     final user = FirebaseAuth.instance.currentUser;
     final theme = Theme.of(context);
 
-    // ✅ 2. Оборачиваем Scaffold в наш фон
     return MultiWaveBackground(
       child: Scaffold(
-        // ✅ 3. Делаем фон прозрачным
         backgroundColor: Colors.transparent,
         appBar: AppBar(
           title: const Text('Корзина'),
@@ -51,6 +132,7 @@ class CartScreen extends StatelessWidget {
             : Column(
           children: [
             Expanded(
+              // ✅ ВОССТАНОВЛЕННЫЙ КОД ДЛЯ СПИСКА ТОВАРОВ
               child: ListView.builder(
                 padding: const EdgeInsets.only(top: 8.0),
                 itemCount: cart.items.length,
@@ -69,7 +151,6 @@ class CartScreen extends StatelessWidget {
                       margin: const EdgeInsets.symmetric(horizontal: 15, vertical: 4),
                       child: const Icon(Icons.delete, color: Colors.white, size: 30),
                     ),
-                    // ✅ 4. Стилизуем карточку товара
                     child: Card(
                       color: Colors.black.withOpacity(0.4),
                       margin: const EdgeInsets.symmetric(horizontal: 15, vertical: 4),
@@ -93,7 +174,6 @@ class CartScreen extends StatelessWidget {
                 },
               ),
             ),
-            // ✅ 5. Стилизуем итоговую панель
             Card(
               color: Colors.black.withOpacity(0.6),
               margin: const EdgeInsets.all(15),
@@ -116,9 +196,12 @@ class CartScreen extends StatelessWidget {
                       ],
                     ),
                     const SizedBox(height: 12),
+                    // ✅ ПОЛНОСТЬЮ ВОССТАНОВЛЕННАЯ КНОПКА
                     ElevatedButton(
-                      child: const Text('Оформить заказ'),
-                      onPressed: (cart.items.isEmpty || user == null) ? null : () => _checkout(context, cart, firestoreService),
+                      child: const Text('К оплате'),
+                      onPressed: (cart.items.isEmpty || user == null)
+                          ? null
+                          : () => _showPaymentOptions(context, cart),
                       style: ElevatedButton.styleFrom(
                         minimumSize: const Size(double.infinity, 50),
                         backgroundColor: theme.colorScheme.secondary,
