@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:funny_flower/models/product_model.dart';
 import 'package:funny_flower/providers/wishlist_provider.dart';
 import 'package:funny_flower/services/firestore_service.dart';
+import 'package:funny_flower/utils/intentions.dart'; // ✅ 1. Импортируем наш генератор
 import 'package:funny_flower/widgets/multi_wave_background.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -20,17 +21,19 @@ class _HomeScreenState extends State<HomeScreen> {
     'Все', 'Расслабляющий', 'Бодрящий', 'Целебный', 'Мистический', 'Вдохновляющий', 'Сновидческий'
   ];
 
-  // ✅ 1. Состояние для управления поиском
   bool _isSearching = false;
   final _searchController = TextEditingController();
+
+  // ✅ 2. Состояние для хранения текущего намерения
+  String _currentIntention = '';
 
   @override
   void initState() {
     super.initState();
-    // Слушаем изменения в тексте поиска для перерисовки UI
-    _searchController.addListener(() {
-      setState(() {});
-    });
+    _searchController.addListener(() => setState(() {}));
+
+    // ✅ 3. Генерируем первое намерение при открытии экрана
+    _currentIntention = IntentionGenerator.getRandomIntention();
   }
 
   @override
@@ -39,7 +42,6 @@ class _HomeScreenState extends State<HomeScreen> {
     super.dispose();
   }
 
-  // ✅ 2. Метод для построения обычного AppBar
   AppBar _buildDefaultAppBar() {
     return AppBar(
       title: const Text('Funny Flower'),
@@ -48,17 +50,12 @@ class _HomeScreenState extends State<HomeScreen> {
       actions: [
         IconButton(
           icon: const Icon(Icons.search),
-          onPressed: () {
-            setState(() {
-              _isSearching = true;
-            });
-          },
+          onPressed: () => setState(() => _isSearching = true),
         ),
       ],
     );
   }
 
-  // ✅ 3. Метод для построения AppBar с полем поиска
   AppBar _buildSearchAppBar() {
     return AppBar(
       backgroundColor: Colors.black.withOpacity(0.5),
@@ -83,18 +80,14 @@ class _HomeScreenState extends State<HomeScreen> {
         style: const TextStyle(color: Colors.white),
       ),
       actions: [
-        // Кнопка для очистки поля поиска
         if (_searchController.text.isNotEmpty)
           IconButton(
             icon: const Icon(Icons.clear),
-            onPressed: () {
-              _searchController.clear();
-            },
+            onPressed: () => _searchController.clear(),
           ),
       ],
     );
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -106,7 +99,6 @@ class _HomeScreenState extends State<HomeScreen> {
       numAnimations: 20,
       child: Scaffold(
         backgroundColor: Colors.transparent,
-        // ✅ 4. Динамически меняем AppBar в зависимости от состояния _isSearching
         appBar: _isSearching ? _buildSearchAppBar() : _buildDefaultAppBar(),
         body: Stack(
           children: [
@@ -126,9 +118,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
             ),
-            // ✅ 5. Если активен поиск, скрываем слайдеры и фильтры, показываем только сетку
             if (_isSearching)
-              _buildSearchResults(firestoreService, wishlistProvider, theme)
+              _buildProductGrid(firestoreService, wishlistProvider, theme, ignoreEffectFilter: true)
             else
               _buildDefaultContent(firestoreService, wishlistProvider, theme),
           ],
@@ -137,11 +128,71 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // ✅ 6. Выносим основной контент в отдельный виджет для чистоты кода
+  // ✅ 4. Создаем виджет для карточки с намерением
+  Widget _buildIntentionCard() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 8.0),
+      child: Card(
+        color: Colors.black.withOpacity(0.5),
+        elevation: 4,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        child: InkWell(
+          onTap: () => setState(() => _currentIntention = IntentionGenerator.getRandomIntention()),
+          borderRadius: BorderRadius.circular(12),
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const Text(
+                  'Фокус для Путешествия',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.cyanAccent),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  _currentIntention,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(fontSize: 16, height: 1.5, fontStyle: FontStyle.italic),
+                ),
+                const SizedBox(height: 12),
+                const Align(
+                  alignment: Alignment.bottomRight,
+                  child: Text('Нажми, чтобы сменить', style: TextStyle(fontSize: 12, color: Colors.white54)),
+                )
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  // ✅ 5. Создаем виджет для кнопки запуска теста
+  Widget _buildQuizButton() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16.0, 8.0, 16.0, 16.0),
+      child: ElevatedButton.icon(
+        icon: const Icon(Icons.psychology),
+        label: const Text('Подобрать растение по духу'),
+        style: ElevatedButton.styleFrom(
+          minimumSize: const Size(double.infinity, 50),
+          backgroundColor: Theme.of(context).colorScheme.secondary,
+          foregroundColor: Theme.of(context).colorScheme.onSecondary,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        ),
+        onPressed: () => context.go('/quiz'),
+      ),
+    );
+  }
+
   Widget _buildDefaultContent(FirestoreService firestoreService, WishlistProvider wishlistProvider, ThemeData theme) {
     return NestedScrollView(
       headerSliverBuilder: (context, innerBoxIsScrolled) {
         return [
+          // ✅ 6. Добавляем новые виджеты в начало списка
+          SliverToBoxAdapter(child: _buildIntentionCard()),
+          SliverToBoxAdapter(child: _buildQuizButton()),
           SliverToBoxAdapter(child: _buildShamanChoice(firestoreService)),
           SliverToBoxAdapter(child: _buildEffectFilters(theme)),
         ];
@@ -150,13 +201,9 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // ✅ 7. Отдельный виджет для отображения результатов поиска
-  Widget _buildSearchResults(FirestoreService firestoreService, WishlistProvider wishlistProvider, ThemeData theme) {
-    // В режиме поиска мы игнорируем фильтр по эффекту и ищем по всему каталогу
-    return _buildProductGrid(firestoreService, wishlistProvider, theme, ignoreEffectFilter: true);
-  }
+  // Остальной код остается без изменений
+  // ... _buildShamanChoice, _buildEffectFilters, _buildProductGrid ...
 
-  // ✅ Вспомогательные методы для построения частей UI
   Widget _buildShamanChoice(FirestoreService firestoreService) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -250,7 +297,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildProductGrid(FirestoreService firestoreService, WishlistProvider wishlistProvider, ThemeData theme, {bool ignoreEffectFilter = false}) {
     return StreamBuilder<List<Product>>(
-      // ✅ 8. Если ищем, то берем все продукты. Иначе - фильтруем по эффекту.
       stream: firestoreService.getProducts(effect: ignoreEffectFilter ? 'Все' : _selectedEffect),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
@@ -263,7 +309,6 @@ class _HomeScreenState extends State<HomeScreen> {
           return const Center(child: Text('Растений с таким эффектом нет'));
         }
 
-        // ✅ 9. Логика фильтрации по поисковому запросу
         var products = snapshot.data!;
         final searchQuery = _searchController.text.toLowerCase();
 
@@ -278,7 +323,6 @@ class _HomeScreenState extends State<HomeScreen> {
         }
 
         return GridView.builder(
-          // Если мы в режиме поиска, добавляем отступ сверху, чтобы не залезать под AppBar
           padding: _isSearching ? const EdgeInsets.fromLTRB(16, 16, 16, 16) : const EdgeInsets.all(16),
           gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: 2,

@@ -2,17 +2,19 @@
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:funny_flower/models/user_model.dart'; // <-- НОВЫЙ ИМПОРТ
+import 'package:funny_flower/models/user_model.dart';
 
 // Импортируем все наши экраны
 import 'package:funny_flower/screens/auth/login_screen.dart';
 import 'package:funny_flower/screens/cart_screen.dart';
-import 'package:funny_flower/screens/edit_profile_screen.dart'; // <-- НОВЫЙ ИМПОРТ
+import 'package:funny_flower/screens/edit_profile_screen.dart';
 import 'package:funny_flower/screens/home_screen.dart';
 import 'package:funny_flower/screens/main_shell.dart';
 import 'package:funny_flower/screens/onboarding_screen.dart';
 import 'package:funny_flower/screens/product_detail_screen.dart';
 import 'package:funny_flower/screens/profile_screen.dart';
+import 'package:funny_flower/screens/quiz_screen.dart'; // ✅ НОВЫЙ ИМПОРТ
+import 'package:funny_flower/screens/results_screen.dart'; // ✅ НОВЫЙ ИМПОРТ
 
 class AppRouter {
   static final router = GoRouter(
@@ -25,16 +27,27 @@ class AppRouter {
           return MainShell(child: child);
         },
         routes: [
-          // 1. Главный экран
+          // 1. Главный экран и его дочерние роуты
           GoRoute(
             path: '/home',
             builder: (context, state) => const HomeScreen(),
             routes: [
+              // Роут для детальной страницы продукта
               GoRoute(
                 path: 'product/:id',
                 builder: (context, state) {
                   final productId = state.pathParameters['id']!;
                   return ProductDetailScreen(productId: productId);
+                },
+              ),
+              // ✅ НОВЫЙ РОУТ ДЛЯ ЭКРАНА С РЕЗУЛЬТАТАМИ ТЕСТА
+              GoRoute(
+                // Путь будет /home/results?effect=...
+                path: 'results',
+                builder: (context, state) {
+                  // Извлекаем рекомендованный эффект из query-параметров
+                  final effect = state.uri.queryParameters['effect'] ?? 'Все';
+                  return ResultsScreen(recommendedEffect: effect);
                 },
               ),
             ],
@@ -50,16 +63,10 @@ class AppRouter {
           GoRoute(
             path: '/profile',
             builder: (context, state) => const ProfileScreen(),
-            // --- ✅ НОВЫЙ ВЛОЖЕННЫЙ РОУТ ДЛЯ РЕДАКТИРОВАНИЯ ---
             routes: [
               GoRoute(
-                // Путь будет /profile/edit
                 path: 'edit',
                 builder: (context, state) {
-                  // Извлекаем объект пользователя, который мы передали
-                  // через параметр `extra` при вызове `context.push`.
-                  // Если `extra` будет null, приложение сломается, поэтому
-                  // важно всегда передавать данные при переходе.
                   final user = state.extra as UserModel;
                   return EditProfileScreen(user: user);
                 },
@@ -77,6 +84,11 @@ class AppRouter {
       GoRoute(
         path: '/login',
         builder: (context, state) => const LoginScreen(),
+      ),
+      // ✅ НОВЫЙ РОУТ ДЛЯ ЭКРАНА ТЕСТА
+      GoRoute(
+        path: '/quiz',
+        builder: (context, state) => const QuizScreen(),
       ),
     ],
 
