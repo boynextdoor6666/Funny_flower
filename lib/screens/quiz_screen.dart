@@ -15,7 +15,6 @@ class _QuizScreenState extends State<QuizScreen> {
   final Map<String, int> _totalScores = {};
 
   void _answerQuestion(Map<String, int> scores) {
-    // Суммируем очки
     scores.forEach((key, value) {
       _totalScores[key] = (_totalScores[key] ?? 0) + value;
     });
@@ -30,17 +29,12 @@ class _QuizScreenState extends State<QuizScreen> {
   }
 
   void _showResults() {
-    // Находим эффект с максимальным количеством очков
     if (_totalScores.isEmpty) {
-      // Если пользователь как-то пропустил все вопросы
       context.go('/home');
       return;
     }
     final resultEffect = _totalScores.entries.reduce((a, b) => a.value > b.value ? a : b).key;
 
-    // Передаем результат на специальный экран или фильтруем главный
-    // Пока просто перейдем на главный, а дальше сделаем экран результатов
-    // Для этого нужно будет настроить роутинг
     print("Рекомендованный эффект: $resultEffect");
     context.go('/home/results?effect=$resultEffect');
   }
@@ -49,7 +43,17 @@ class _QuizScreenState extends State<QuizScreen> {
   Widget build(BuildContext context) {
     final question = quizQuestions[_currentQuestionIndex];
     return Scaffold(
-      appBar: AppBar(title: Text('Вопрос ${_currentQuestionIndex + 1} из ${quizQuestions.length}')),
+      appBar: AppBar(
+        automaticallyImplyLeading: false,
+        title: Text('Вопрос ${_currentQuestionIndex + 1} из ${quizQuestions.length}'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.close),
+            tooltip: 'Выйти из теста',
+            onPressed: () => context.go('/home'),
+          ),
+        ],
+      ),
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
@@ -77,9 +81,21 @@ class _QuizScreenState extends State<QuizScreen> {
                     icon: Icon(answer.icon),
                     label: Text(answer.text),
                     onPressed: () => _answerQuestion(answer.scores),
+                    // ✅✅✅ ВОТ ЗДЕСЬ ВСЕ ИЗМЕНЕНИЯ ✅✅✅
                     style: ElevatedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 16),
-                      textStyle: const TextStyle(fontSize: 16),
+                      // Устанавливаем цвет текста и иконки
+                      foregroundColor: Colors.cyanAccent,
+                      // Делаем фон кнопки темным и полупрозрачным
+                      backgroundColor: Colors.black.withOpacity(0.4),
+                      // Добавляем стилизованную рамку
+                      side: const BorderSide(color: Colors.cyanAccent, width: 1),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      // Добавляем жирность к тексту
+                      textStyle: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 );
