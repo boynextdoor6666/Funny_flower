@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:introduction_screen/introduction_screen.dart';
 import 'package:lottie/lottie.dart';
-import 'package:audioplayers/audioplayers.dart'; // ✅ 1. Импортируем плеер
+import 'package:audioplayers/audioplayers.dart';
 
-class OnboardingScreen extends StatefulWidget { // ✅ 2. Преобразуем в StatefulWidget
+class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({Key? key}) : super(key: key);
 
   @override
@@ -17,8 +17,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   @override
   void initState() {
     super.initState();
-    // ✅ 4. Запускаем звук при инициализации экрана
-    // Устанавливаем режим, чтобы звук не зацикливался
+
     _audioPlayer.setReleaseMode(ReleaseMode.stop);
     // Проигрываем звук из локальных ассетов
     _audioPlayer.play(AssetSource('audio/intro_sound.mp3'));
@@ -26,7 +25,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   @override
   void dispose() {
-    // ✅ 5. Освобождаем ресурсы плеера, когда экран уничтожается
+
     _audioPlayer.dispose();
     super.dispose();
   }

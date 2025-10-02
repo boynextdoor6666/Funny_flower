@@ -13,8 +13,8 @@ import 'package:funny_flower/screens/main_shell.dart';
 import 'package:funny_flower/screens/onboarding_screen.dart';
 import 'package:funny_flower/screens/product_detail_screen.dart';
 import 'package:funny_flower/screens/profile_screen.dart';
-import 'package:funny_flower/screens/quiz_screen.dart'; // ✅ НОВЫЙ ИМПОРТ
-import 'package:funny_flower/screens/results_screen.dart'; // ✅ НОВЫЙ ИМПОРТ
+import 'package:funny_flower/screens/quiz_screen.dart';
+import 'package:funny_flower/screens/results_screen.dart';
 
 class AppRouter {
   static final router = GoRouter(
@@ -40,7 +40,7 @@ class AppRouter {
                   return ProductDetailScreen(productId: productId);
                 },
               ),
-              // ✅ НОВЫЙ РОУТ ДЛЯ ЭКРАНА С РЕЗУЛЬТАТАМИ ТЕСТА
+
               GoRoute(
                 // Путь будет /home/results?effect=...
                 path: 'results',
@@ -85,7 +85,7 @@ class AppRouter {
         path: '/login',
         builder: (context, state) => const LoginScreen(),
       ),
-      // ✅ НОВЫЙ РОУТ ДЛЯ ЭКРАНА ТЕСТА
+
       GoRoute(
         path: '/quiz',
         builder: (context, state) => const QuizScreen(),

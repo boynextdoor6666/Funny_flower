@@ -6,7 +6,7 @@ import 'package:funny_flower/models/product_model.dart';
 class CartProvider with ChangeNotifier {
   Map<String, CartItem> _items = {};
 
-  // ✅ 1. Храним общую сумму в отдельной переменной для эффективности
+
   double _totalAmount = 0.0;
 
   Map<String, CartItem> get items {
@@ -14,17 +14,15 @@ class CartProvider with ChangeNotifier {
   }
 
   int get itemCount {
-    // Возвращаем количество уникальных товаров, а не общее количество
+
     return _items.length;
   }
 
-  // ✅ 2. Геттер теперь просто возвращает сохраненное значение, без вычислений
+
   double get totalAmount {
     return _totalAmount;
   }
 
-  /// ✅ 3. Приватный хелпер для пересчета общей суммы.
-  /// Вызывается только когда корзина изменяется.
   void _recalculateTotal() {
     var total = 0.0;
     _items.forEach((key, cartItem) {
@@ -67,7 +65,7 @@ class CartProvider with ChangeNotifier {
     notifyListeners();   // Уведомляем слушателей
   }
 
-  /// ✅ 4. НОВЫЙ МЕТОД для добавления одной единицы товара.
+
   void addSingleItem(String productId) {
     if (_items.containsKey(productId)) {
       _items.update(

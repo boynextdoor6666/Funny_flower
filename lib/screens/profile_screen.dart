@@ -60,7 +60,7 @@ class ProfileScreen extends StatelessWidget {
         stream: firestoreService.getUserProfileStream(currentUser.uid),
         builder: (context, userSnapshot) {
 
-          // ✅ ИСПРАВЛЕНИЕ 2: Используем структуру if-else, чтобы гарантировать возврат Widget
+
 
           // Сценарий 1: Загрузка
           if (userSnapshot.connectionState == ConnectionState.waiting) {

@@ -28,7 +28,6 @@ class Product {
     required this.effect,
     required this.intensity,
     required this.isShamanChoice,
-    // ✅ 2. ДОБАВЛЕНЫ В КОНСТРУКТОР
     this.dosageLight,
     this.dosageMedium,
     this.dosageHeavy,

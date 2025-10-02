@@ -25,7 +25,6 @@ class UserModel {
       'email': email,
       'displayName': displayName,
       'photoUrl': photoUrl,
-      // ✅ 3. ДОБАВЛЕНО СОХРАНЕНИЕ ОЧКОВ ОПЫТА
       'experiencePoints': experiencePoints,
     };
   }

@@ -113,7 +113,7 @@ class CartScreen extends StatelessWidget {
           elevation: 0,
         ),
         body: cart.items.isEmpty
-        // ✅ ВОССТАНОВЛЕННЫЙ КОД ДЛЯ ПУСТОЙ КОРЗИНЫ
+
             ? Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -129,7 +129,7 @@ class CartScreen extends StatelessWidget {
         )
             : Column(
           children: [
-            // ✅ ВОССТАНОВЛЕННЫЙ КОД ДЛЯ СПИСКА ТОВАРОВ
+
             Expanded(
               child: ListView.builder(
                 padding: const EdgeInsets.only(top: 8.0),
